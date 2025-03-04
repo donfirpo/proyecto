@@ -1,27 +1,8 @@
 const express = require('express');
-const mysql = require('mysql2');
-const app = express();
+const conexion = require('./config/conexion');
+const router = express.Router();
 
-app.use(express.json());
-const puerto = 4000;
-
-const conexion = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: '1234',
-    database: 'VentaVehiculos'
-});
-
-conexion.connect(function (err) {
-    if (err) {
-        throw err;
-    } else {
-        console.log('Conexión exitosa a la base de datos VentaVehiculos');
-    }
-});
-
-// Obtener todos los vehículos
-app.get('/vehiculos', (req, res) => {
+router.get('/', (req, res) => {
     let sql = 'CALL pObtenerVehiculos()';
     conexion.query(sql, (err, resultados) => {
         if (err) {
@@ -33,8 +14,8 @@ app.get('/vehiculos', (req, res) => {
     });
 });
 
-// Obtener un vehículo por ID
-app.get('/vehiculos/:id', (req, res) => {
+
+router.get('/:id', (req, res) => {
     let sql = 'CALL pObtenerVehiculoPorID(?)';
     conexion.execute(sql, [req.params.id], (err, resultados) => {
         if (err) {
@@ -46,8 +27,8 @@ app.get('/vehiculos/:id', (req, res) => {
     });
 });
 
-// Insertar un nuevo vehículo
-app.post('/vehiculos', (req, res) => {
+
+router.post('/', (req, res) => {
     let { Marca, Modelo, Anio, Precio, Kilometraje, Color, VIN, Placa } = req.body;
     let sql = 'CALL pVehiculo(?, ?, ?, ?, ?, ?, ?, ?, ?)';
 
@@ -61,8 +42,8 @@ app.post('/vehiculos', (req, res) => {
     });
 });
 
-// Actualizar un vehículo
-app.put('/vehiculos/:id', (req, res) => {
+
+router.put('/:id', (req, res) => {
     let { Marca, Modelo, Anio, Precio, Kilometraje, Color, VIN, Placa } = req.body;
     let sql = 'CALL pActualizarVehiculo(?, ?, ?, ?, ?, ?, ?, ?, ?)';
 
@@ -76,8 +57,8 @@ app.put('/vehiculos/:id', (req, res) => {
     });
 });
 
-// Eliminar un vehículo
-app.delete('/vehiculos/:id', (req, res) => {
+
+router.delete('/:id', (req, res) => {
     let sql = 'CALL pEliminarVehiculo(?)';
 
     conexion.execute(sql, [req.params.id], (err, resultados) => {
@@ -90,6 +71,15 @@ app.delete('/vehiculos/:id', (req, res) => {
     });
 });
 
-app.listen(puerto, function () {
-    console.log('Servidor ejecutándose en el puerto: ' + puerto);
-});
+module.exports = router; 
+
+/*{
+    "Marca":"Toyota", 
+    "Modelo":"Corolla", 
+    "Anio":2022, 
+    "Precio":200100, 
+    "Kilometraje":100,
+    "Color":"Negro", 
+    "VIN":"SFS4D5F6SFS4SS4", 
+    "Placa":"BOB-546"
+  }*/

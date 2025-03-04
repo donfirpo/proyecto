@@ -1,39 +1,19 @@
 const express = require('express');
-const mysql = require('mysql2');
-const app = express();
-app.use(express.json());
-const puerto = 4000;
-
-const conexion = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: '1234',
-    database: 'VentaVehiculos'
-});
-
-conexion.connect(function (err) {
-    if (err) {
-        throw err;
-    } else {
-        console.log('Conexión exitosa !!!');
-    }
-});
-
-// Obtener todas las personas
-app.get('/personas', (req, res) => {
+const conexion = require('./config/conexion');
+const router =express.Router();
+router.get('/', (req, res) => {
     let sql = 'CALL getPersonas()';
     conexion.query(sql, (err, result) => {
         if (err) {
             console.log(err.message);
             return res.json({ mensaje: 'Error al obtener personas' });
         } else {
-            res.json(result[0]); // result[0] contiene el resultado de la llamada al procedimiento almacenado
+            res.json(result[0]); 
         }
     });
 });
 
-// Insertar persona
-app.post('/personas', function (req, res) {
+router.post('/', function (req, res) {
     let { nombre, apellido_paterno, apellido_materno, direccion, ci, telefono_movil, correo, tipo_persona } = req.body;
     let sql = 'CALL pPersona(?, ?, ?, ?, ?, ?, ?, ?, ?)';
 
@@ -48,8 +28,8 @@ app.post('/personas', function (req, res) {
     });
 });
 
-// Actualizar persona
-app.put('/personas/:id', function (req, res) {
+
+router.put('/:id', function (req, res) {
     let id = req.params.id;
     let { nombre, apellido_paterno, apellido_materno, direccion, ci, telefono_movil, correo, tipo_persona } = req.body;
     let sql = 'CALL updatePersona(?, ?, ?, ?, ?, ?, ?, ?, ?)';
@@ -64,8 +44,8 @@ app.put('/personas/:id', function (req, res) {
     });
 });
 
-// Eliminar persona
-app.delete('/personas/:id', function (req, res) {
+
+router.delete('/:id', function (req, res) {
     let id = req.params.id;
     let sql = 'CALL deletePersona(?)';
 
@@ -78,7 +58,17 @@ app.delete('/personas/:id', function (req, res) {
         }
     });
 });
+module.exports = router; 
 
-app.listen(puerto, function () {
-    console.log('Servidor OK en puerto: ' + puerto);
-});
+
+/*{
+    "nombre": "Mica",
+    "apellido_paterno": "Ramos",
+    "apellido_materno": "Bonilla",
+    "direccion":"Camacho",
+    "ci":78946465,
+    "telefono_movil":75249456,
+    "correo":"mica@gmail.com",
+    "tipo_persona":"Cliente"
+    
+  }*/

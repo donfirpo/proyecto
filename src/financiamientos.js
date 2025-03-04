@@ -1,27 +1,8 @@
 const express = require('express');
-const mysql = require('mysql2');
-const app = express();
+const conexion = require('./config/conexion');
+const router =express.Router();
 
-app.use(express.json());
-const puerto = 4000;
-
-const conexion = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: '1234',
-    database: 'VentaVehiculos'
-});
-
-conexion.connect(function (err) {
-    if (err) {
-        throw err;
-    } else {
-        console.log('Conexión exitosa a la base de datos VentaVehiculos');
-    }
-});
-
-// Obtener todos los financiamientos
-app.get('/financiamientos', (req, res) => {
+router.get('/', (req, res) => {
     let sql = 'CALL pObtenerFinanciamientos()';
     conexion.query(sql, (err, resultados) => {
         if (err) {
@@ -33,8 +14,7 @@ app.get('/financiamientos', (req, res) => {
     });
 });
 
-// Obtener un financiamiento por ID
-app.get('/financiamientos/:id', (req, res) => {
+router.get('/:id', (req, res) => {
     let sql = 'CALL pObtenerFinanciamientoPorID(?)';
     conexion.execute(sql, [req.params.id], (err, resultados) => {
         if (err) {
@@ -46,8 +26,8 @@ app.get('/financiamientos/:id', (req, res) => {
     });
 });
 
-// Insertar un nuevo financiamiento
-app.post('/financiamientos', (req, res) => {
+
+router.post('/', (req, res) => {
     let { ID_Venta, Entidad_Financiera, Monto_Financiado, Tasa_Interes, Plazo_Meses, Cuota_Mensual, Fecha_Inicio, Estado_Financiamiento } = req.body;
     let sql = 'CALL pFinanciamiento(?, ?, ?, ?, ?, ?, ?, ?, ?)';
 
@@ -61,8 +41,8 @@ app.post('/financiamientos', (req, res) => {
     });
 });
 
-// Actualizar un financiamiento
-app.put('/financiamientos/:id', (req, res) => {
+
+router.put('/:id', (req, res) => {
     let { ID_Venta, Entidad_Financiera, Monto_Financiado, Tasa_Interes, Plazo_Meses, Cuota_Mensual, Fecha_Inicio, Estado_Financiamiento } = req.body;
     let sql = 'CALL pActualizarFinanciamiento(?, ?, ?, ?, ?, ?, ?, ?, ?)';
 
@@ -76,8 +56,7 @@ app.put('/financiamientos/:id', (req, res) => {
     });
 });
 
-// Eliminar un financiamiento
-app.delete('/financiamientos/:id', (req, res) => {
+router.delete('/:id', (req, res) => {
     let sql = 'CALL pEliminarFinanciamiento(?)';
 
     conexion.execute(sql, [req.params.id], (err, resultados) => {
@@ -89,7 +68,16 @@ app.delete('/financiamientos/:id', (req, res) => {
         }
     });
 });
+module.exports = router; 
 
-app.listen(puerto, function () {
-    console.log('Servidor ejecutándose en el puerto: ' + puerto);
-});
+
+/*{
+    "ID_Venta":1, 
+    "Entidad_Financiera":"Banco Fie", 
+    "Monto_Financiado":50000.00, 
+    "Tasa_Interes":3.2, 
+    "Plazo_Meses":10, 
+    "Cuota_Mensual":5000, 
+    "Fecha_Inicio":"2025/01/15", 
+    "Estado_Financiamiento":"Aprobado"
+    }*/

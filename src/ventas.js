@@ -1,27 +1,8 @@
 const express = require('express');
-const mysql = require('mysql2');
-const app = express();
+const conexion = require('./config/conexion');
+const router =express.Router();
 
-app.use(express.json());
-const puerto = 4000;
-
-const conexion = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: '1234',
-    database: 'VentaVehiculos'
-});
-
-conexion.connect(function (err) {
-    if (err) {
-        throw err;
-    } else {
-        console.log('Conexión exitosa a la base de datos VentaVehiculos');
-    }
-});
-
-// Obtener todas las ventas
-app.get('/ventas', (req, res) => {
+router.get('/', (req, res) => {
     let sql = 'CALL pObtenerVentas()';
     conexion.query(sql, (err, resultados) => {
         if (err) {
@@ -33,8 +14,7 @@ app.get('/ventas', (req, res) => {
     });
 });
 
-// Obtener una venta por ID
-app.get('/ventas/:id', (req, res) => {
+router.get('/:id', (req, res) => {
     let sql = 'CALL pObtenerVentaPorID(?)';
     conexion.execute(sql, [req.params.id], (err, resultados) => {
         if (err) {
@@ -46,8 +26,7 @@ app.get('/ventas/:id', (req, res) => {
     });
 });
 
-// Insertar una nueva venta
-app.post('/ventas', (req, res) => {
+router.post('/', (req, res) => {
     let { ID_Cliente, ID_Vendedor, ID_Vehiculo, Precio_Venta, Tipo_Pago, Estado_Venta } = req.body;
     let sql = 'CALL pVenta(?, ?, ?, ?, ?, ?, ?)';
 
@@ -61,8 +40,7 @@ app.post('/ventas', (req, res) => {
     });
 });
 
-// Actualizar una venta
-app.put('/ventas/:id', (req, res) => {
+router.put('/:id', (req, res) => {
     let { ID_Cliente, ID_Vendedor, ID_Vehiculo, Precio_Venta, Tipo_Pago, Estado_Venta } = req.body;
     let sql = 'CALL pActualizarVenta(?, ?, ?, ?, ?, ?, ?)';
 
@@ -76,8 +54,7 @@ app.put('/ventas/:id', (req, res) => {
     });
 });
 
-// Eliminar una venta
-app.delete('/ventas/:id', (req, res) => {
+router.delete('/:id', (req, res) => {
     let sql = 'CALL pEliminarVenta(?)';
 
     conexion.execute(sql, [req.params.id], (err, resultados) => {
@@ -89,7 +66,14 @@ app.delete('/ventas/:id', (req, res) => {
         }
     });
 });
+module.exports = router; 
 
-app.listen(puerto, function () {
-    console.log('Servidor ejecutándose en el puerto: ' + puerto);
-});
+
+/*{
+  "ID_Cliente":1, 
+  "ID_Vendedor":2, 
+  "ID_Vehiculo":1, 
+  "Precio_Venta":200100.00, 
+  "Tipo_Pago":"Efectivo", 
+  "Estado_Venta":"Completada"
+}*/
